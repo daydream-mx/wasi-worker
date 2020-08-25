@@ -64,18 +64,6 @@ where
     }
 }
 
-impl<T: Agent<Reach = Public<T>>> Default for WASIAgent<T>
-where
-    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
-    <T as Agent>::Output: serde::Serialize,
-    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
-    <T as Agent>::Input: serde::Serialize,
-{
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 /// Implements rules to register a worker in a separate thread.
 pub trait ThreadedWASI {
     /// Creates Agent Scope, initialized AgentLink
