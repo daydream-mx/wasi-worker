@@ -26,7 +26,10 @@ let wasi = new WASI({
 
 const fetchAndTransformWasmBinary = async (url: string) => {
   // Get the original Wasm binary
+  console.log("PRE FETCH");
+  console.log("PRE FETCH URL:" + url);
   const fetchedOriginalWasmBinary = await fetch(url);
+  console.log("AFTER FETCH");
   const originalWasmBinaryBuffer = await fetchedOriginalWasmBinary.arrayBuffer();
   const originalWasmBinary = new Uint8Array(originalWasmBinaryBuffer);
 
