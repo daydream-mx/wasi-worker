@@ -37,18 +37,42 @@ pub use yew::agent::{Agent, AgentLink, FromWorker, HandlerId, Packed, Public, To
 
 use std::io;
 use wasi_worker::Handler;
-use yew::agent::{AgentScope, AgentLifecycleEvent, Responder};
+use yew::agent::{AgentLifecycleEvent, AgentScope, Responder};
 
 /// WASIAgent is the main executor and communication bridge for yew Agent with Reach = Public
-pub struct WASIAgent<T: Agent<Reach = Public>> {
+pub struct WASIAgent<T: Agent<Reach = Public<T>>>
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
     scope: AgentScope<T>,
 }
 
-impl<T: Agent<Reach = Public>> WASIAgent<T> {
+impl<T: Agent<Reach = Public<T>>> WASIAgent<T>
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
     pub fn new() -> Self {
         Self {
             scope: AgentScope::<T>::new(),
         }
+    }
+}
+
+impl<T: Agent<Reach = Public<T>>> Default for WASIAgent<T>
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -60,7 +84,13 @@ pub trait ThreadedWASI {
     fn run(&self) -> io::Result<()>;
 }
 
-impl<T: Agent<Reach = Public>> ThreadedWASI for WASIAgent<T> {
+impl<T: Agent<Reach = Public<T>>> ThreadedWASI for WASIAgent<T>
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
     fn run(&self) -> io::Result<()> {
         let responder = WASIResponder {};
         let link = AgentLink::connect(&self.scope, responder);
@@ -72,7 +102,13 @@ impl<T: Agent<Reach = Public>> ThreadedWASI for WASIAgent<T> {
     }
 }
 
-impl<T: Agent<Reach = Public>> Handler for WASIAgent<T> {
+impl<T: Agent<Reach = Public<T>>> Handler for WASIAgent<T>
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
     fn on_message(&self, data: &[u8]) -> io::Result<()> {
         let msg = ToWorker::<T::Input>::unpack(&data);
         match msg {
@@ -103,7 +139,13 @@ struct WASIResponder {}
 // Sending message from worker via ServiceWorker channel
 //
 // In case of sending message failed it will place error to stderr, which should print to console.
-impl<T: Agent<Reach = Public>> Responder<T> for WASIResponder {
+impl<T: Agent<Reach = Public<T>>> Responder<T> for WASIResponder
+where
+    for<'de> <T as Agent>::Output: serde::de::Deserialize<'de>,
+    <T as Agent>::Output: serde::Serialize,
+    for<'de> <T as Agent>::Input: serde::de::Deserialize<'de>,
+    <T as Agent>::Input: serde::Serialize,
+{
     fn respond(&self, id: HandlerId, output: T::Output) {
         let msg = FromWorker::ProcessOutput(id, output);
         let data = msg.pack();
@@ -120,7 +162,7 @@ mod tests {
 
     struct MyAgent;
     impl Agent for MyAgent {
-        type Reach = Public;
+        type Reach = Public<Self>;
         type Message = String;
         type Input = String;
         type Output = String;

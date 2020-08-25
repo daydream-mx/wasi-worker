@@ -14,5 +14,6 @@ repository = "https://github.com/dunnock/wasi-worker/tree/master/crates/wasi-wor
 
 [dependencies]
 wasi-worker = { path = "../..", version = "0.5" }
-yew = "0.11"
+yew = { git = "https://github.com/daydream-mx/yew.git", branch = "MTRNord/daydream-no-bincode" }
 anymap = "0.12"
+serde = "1"
