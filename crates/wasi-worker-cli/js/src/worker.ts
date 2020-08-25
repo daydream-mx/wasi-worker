@@ -26,10 +26,14 @@ let wasi = new WASI({
 
 const fetchAndTransformWasmBinary = async (url: string) => {
   // Get the original Wasm binary
-  console.log("PRE FETCH");
-  console.log("PRE FETCH URL:" + url);
-  const fetchedOriginalWasmBinary = await fetch(url);
-  console.log("AFTER FETCH");
+  
+  let fixed_url = location.href.replace("blob:", "");
+  let fixed_url_without_http_https = fixed_url.replace("http://", "").replace("https://", "");
+  var host = fixed_url_without_http_https.split("/")[0];
+  var scheme = fixed_url.replace(fixed_url_without_http_https, "");
+  let new_url = scheme + host;
+  var absolute_url = new_url + "/" + url;
+  const fetchedOriginalWasmBinary = await fetch(absolute_url);
   const originalWasmBinaryBuffer = await fetchedOriginalWasmBinary.arrayBuffer();
   const originalWasmBinary = new Uint8Array(originalWasmBinaryBuffer);
 
